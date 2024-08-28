@@ -149,9 +149,11 @@ family({_,_,_,_,_,_,_,_}) -> inet6.
 
 make_gtp_socket(NetNs, IP, Port, Opts) when is_list(NetNs) ->
     {ok, Socket} = gen_socket:socketat(NetNs, family(IP), dgram, udp),
+    bind_gtp_socket(Socket, IP, Port, Opts);
 
 make_gtp_socket(_NetNs, IP, Port, Opts) ->
     {ok, Socket} = gen_socket:socket(family(IP), dgram, udp),
+    bind_gtp_socket(Socket, IP, Port, Opts).
 
 bind_gtp_socket(Socket, {_,_,_,_} = IP, Port, Opts) ->
     case proplists:get_bool(freebind, Opts) of
@@ -164,7 +166,7 @@ bind_gtp_socket(Socket, {_,_,_,_} = IP, Port, Opts) ->
     ok = gen_socket:bind(Socket, {inet4, IP, Port}),
     ok = gen_socket:setsockopt(Socket, sol_ip, recverr, true),
     ok = gen_socket:input_event(Socket, true),
-    {ok, Socket}.
+    {ok, Socket};
 
 bind_gtp_socket(Socket, {_,_,_,_,_,_,_,_} = IP, Port, Opts) ->
     %% ok = gen_socket:setsockopt(Socket, sol_ip, recverr, true),
